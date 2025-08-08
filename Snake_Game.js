@@ -1,4 +1,183 @@
-let n = 5;
-for(let i=0; i<n; i++){
-    console.log("Apna College", i);
+var Snake = function (){
+        const INITIAL_TAIL = 4;
+        var fixedTail = true;
+
+        var interalID = 10;
+        var gridSize = 400/tileCount;
+
+        const INITIAL_PLAYER = { x: Math.floor(tileCount / 2), y:Math.floor(tileCount / 2) };
+
+        var velocity = {x:0, y:0};
+        var player = {x: INITIAL_PLAYER.x, y:INITIAL_PLAYER.y};
+
+        var walls = false;
+        var fruit = {x:1, y:1};
+
+        var trail = [];
+        var tail = INITIAL_TAIL;
+
+        var reward = 0;
+        var points = 0;
+        var pointMax = 0;
+        
+        var ActionEnum = {'none':0, 'up':1, 'down':2, 'left':3, 'right':4};
+        Object.freeze(ActionEnum);
+        var lastAction = ActionEnum.none;
+
+        function setup () {
+            canv = document.getElementById('gc');
+            ctx = canv.getContext('2d');
+
+            game.reset();
+        }
+
+        var game = {
+            reset: function () {
+                ctx.fillRect(0,0, canv.width, canv.height);
+                tail = INITIAL_TAIL;
+                points = 0;
+                velocity.x = 0;
+                velocity.y = 0;
+                player.x = INITIAL_PLAYER.x;
+                player.y = INITIAL_PLAYER.y;
+                // this.RandomFruit();
+                reward = -1;
+
+                lastAction = ActionEnum.none;
+                trail = [];
+                trail.push({ x: player.x, y: player.y});
+                //for(var i=0; i<trail; i++) trail.push({ x:player.x, y:player.y});
+                },
+                action: {
+                    up: function(){
+                        if (lastAction != ActionEnum.down){
+                            velocity.x = 0; velocity.y = -1;
+                        }
+                    },
+                    down:function() {
+                        if(lastAction != ActionEnum.up){
+                            velocity.x = 0;
+                            velocity.y =1;
+                        }
+                    },
+                    left: function(){
+                        if (lastAction != ActionEnum.right){velocity.x = -1; velocity.y = 0;}
+                    },
+                    right: function() {
+                        if(lastAction != ActionEnum.left){velocity.x = 1; velocity.y =0;}
+                    }
+                },
+                RandomFruit: function () {
+                    if(walls){
+                        fruit.x = 1+Math.floor(Math.random()*(tileCount-2));
+                    } else{
+                        fruit.x = Math.floor(Math.random() * tileCount); fruit.y = Math.floor(Math.random()* tileCount);
+                    }
+                },
+                log: function() {
+                    console.log('==============');
+                    console.log('x:'+ player.y);
+                    console.log('tail:'+ tail + ', trail.length:' + trail.length);
+                },
+                loop: function() {
+                    reward = -0.1;
+                    function DontHiwall (){
+                        if(player.x <0) player.x = tileCount-1;
+                        if(player.x >= tileCount) player.x = 0;
+                        if(player.y <0) player.y = tileCount-1;
+                        if(player.y >= tileCount) player.y = 0;
+                    }
+                    function HitWall () {
+                        if(player.x <1) game.reset();
+                        if(player.x > tileCount-2) game.reset();
+                        if(player.y <1) game.reset();
+                        if(player.y > tileCount-2) game.reset();
+
+                        ctx.fillStyle = 'grey';
+                        ctx.fillRect(0,0,gridSize-1,canv.height);
+                        ctx.fillRect(0,0,canv.width,gridSize-1);
+                        ctx.fillRect(canv.width-gridSize+1,0,gridSize,canv.height);
+                        ctx.fillRect(0, canv.height-gridSize+1, canv.width,gridSize);
+                    }
+
+                    var stopped = velocity.x == 0 && velocity.y == 0;
+                    player.x += velocity.x; player.y += velocity.y;
+                    if(velocity.x == 0 && velocity.y == -1) latsAction = ActionEnum.up;
+                    if(velocity.x == 0 && velocity.y ==1) lastAction = ActionEnum.down;
+                    if(velocity.x == -1 && velocity.y == 0) latsAction = ActionEnum.left;
+                    if(velocity.x == 1 && velocity.y == 0) lastAction = ActionEnum.right;
+
+                    ctx.fillStyle = 'rgba(40,40,40,0.8)';
+                    ctx.fillRect(0,0,canv.width, canv.height);
+
+                    if(walls) HitWall();
+                    else DontHiwall();
+
+                    // game.log();
+                    if(!stopped){
+                        trail.push({x:player.x, y:player.y});
+                        while(trail.length > tail)
+                            trail.shift();
+                    }
+
+                    if(!stopped){
+                        ctx.fillStyle = 'rgba(200,200,200,0.2'; ctx.font = "small-caps 14px Helvetica"; ctx.fillText("(space) pause", 24,374); 
+                    }
+                    ctx.fillStyle = 'green';
+                    for(var i=0; i<trail.length-1; i++){
+                        ctx.fillRect(trail[i].x *gridSize+1, trail[i].y*gridSize+1, gridSize-2, gridSize-2);
+                        // console.debug( i+ ' => player:' + player.x, player.y,+ ', trail:' + trail[i].x, trail[i].y);
+                        if(!stopped && trail[i].x == player.x && trail[i].y){
+                            game.reset();
+                        }
+                        ctx.fillStyle = 'lime';
+                    }
+                    ctx.fillRect(trail[trail.length-1].x *gridSize+1,trail[trail.length-1].y*gridSize+1, gridSize-2, gridSize-2);
+                    if(player.x == fruit.x && player.y == fruit.y){
+                        if(!fixedTail) tail++; points++;
+                        if(points > pointMax) pointMax = points; reward = 1;
+                        game.RandomFruit();
+                        // make sure new fruit didn't spawn in snake tail
+                        while((function () {
+                            for(var i=0; i<trail.length; i++){
+                                if(trail[i].x == fruit.x && trail[i].y == fruit.y){
+                                    game.RandomFruit();
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })());
+                    }
+                    ctx.fillStyle = 'blue';
+                    ctx.fillRect(fruit.x *gridSize+1, fruit.y*gridSize+1, gridSize-2, gridSize-2);
+                    if(stopped){
+                        ctx.fillStyle = 'rgba(250,250,250, 0.8)';
+                        ctx.font = "small-caps bold 14px Helvetica";
+                        ctx.fillText("points: " + points, 288, 40);
+                        ctx.fillText("Top:" + pointMax, 292, 60);
+
+                        return reward;
+                    }
+                }
+                function keyPush (evt){
+                    switch (evt.keyCode) {
+                        case 37:  // left
+                            game.action.left();
+                            evt.preventDefault();
+                            break;
+
+                        case 38: // up
+                        game.action.up();
+                        evt.preventDefault();
+                        break;
+
+                    
+                        default:
+                            break;
+                    }
+                }
+
+                
+        }
 }
+
