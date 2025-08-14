@@ -6,7 +6,7 @@ var Snake = (function () {
   var intervalID;
 
   var tileCount = 10;
-  var gridSize = 400/tileCount;
+  var gridSize = 200/tileCount;
 
   const INITIAL_PLAYER = { x: Math.floor(tileCount / 2), y: Math.floor(tileCount / 2) };
 
@@ -38,7 +38,7 @@ var Snake = (function () {
   var game = {
 
     reset: function () {
-      ctx.fillStyle = 'grey';
+      ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canv.width, canv.height);
 
       tail = INITIAL_TAIL;
@@ -122,19 +122,19 @@ var Snake = (function () {
         ctx.fillRect(0,0,canv.width,gridSize-1);
         ctx.fillRect(canv.width-gridSize+1,0,gridSize,canv.height);
         ctx.fillRect(0, canv.height-gridSize+1,canv.width,gridSize);
-      }
+        }
 
-      var stopped = velocity.x == 0 && velocity.y == 0;
+        var stopped = velocity.x == 0 && velocity.y == 0;
 
-      player.x += velocity.x;
-      player.y += velocity.y;
+    player.x += velocity.x;
+    player.y += velocity.y;
 
-      if (velocity.x == 0 && velocity.y == -1) lastAction = ActionEnum.up;
-      if (velocity.x == 0 && velocity.y == 1) lastAction = ActionEnum.down;
-      if (velocity.x == -1 && velocity.y == 0) lastAction = ActionEnum.left;
-      if (velocity.x == 1 && velocity.y == 0) lastAction = ActionEnum.right;
+    if (velocity.x == 0 && velocity.y == -1) lastAction = ActionEnum.up;
+    if (velocity.x == 0 && velocity.y == 1) lastAction = ActionEnum.down;
+    if (velocity.x == -1 && velocity.y == 0) lastAction = ActionEnum.left;
+    if (velocity.x == 1 && velocity.y == 0) lastAction = ActionEnum.right;
 
-      ctx.fillStyle = 'rgba(40,40,40,0.8)';
+    ctx.fillStyle = 'rgba(40,40,40,0.8)';
       ctx.fillRect(0,0,canv.width,canv.height);
 
       if(walls) HitWall();
@@ -184,7 +184,7 @@ var Snake = (function () {
         })());
       }
 
-      ctx.fillStyle = 'red';
+      ctx.fillStyle = 'yellow';
       ctx.fillRect(fruit.x * gridSize+1, fruit.y * gridSize+1, gridSize-2, gridSize-2);
 
       if(stopped) {
@@ -194,7 +194,7 @@ var Snake = (function () {
       }
 
       ctx.fillStyle = 'white';
-      ctx.font = "bold small-caps 16px Helvetica";
+      ctx.font = "  small-caps 16px Helvetica";
       ctx.fillText("points: " + points, 288, 40);
       ctx.fillText("top: " + pointsMax, 292, 60);
 
@@ -263,7 +263,7 @@ var Snake = (function () {
       },
       tileCount: function (size) {
         tileCount = size;
-        gridSize = 400 / tileCount;
+        gridSize = 200 / tileCount;
       },
       fixedTail: function (state) {
         fixedTail = state;
